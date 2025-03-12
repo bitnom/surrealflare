@@ -1,5 +1,5 @@
-import { Surreal } from 'node:surrealdb';
-import { surrealdbNodeEngines } from 'node:@surrealdb/node';
+import { Surreal } from 'surrealdb';
+import { surrealdbNodeEngines } from '@surrealdb/node';
 
 // Initialize SurrealDB with Node.js engine
 const db = new Surreal({

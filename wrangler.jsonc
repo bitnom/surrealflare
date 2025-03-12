@@ -27,7 +27,7 @@
 		"enabled": true
 	},
 	"compatibility_flags": [
-		"nodejs_compat"
+		"nodejs_compat_v2"
 	],
 	// "socket_options": {
 	// 	"dns_timeout": 10000
