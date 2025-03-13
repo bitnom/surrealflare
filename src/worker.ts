@@ -1,75 +1,43 @@
 import { Surreal } from 'surrealdb';
-import { surrealdbNodeEngines } from '@surrealdb/node';
+import { surrealdbWasmEngines } from '@surrealdb/wasm';
 
-// Initialize SurrealDB with Node.js engine
-const db = new Surreal({
-  engines: surrealdbNodeEngines(),
-});
+// Create SurrealDB instance with WASM engine
+let db: Surreal | null = null;
+
+// Explicitly handle database initialization
+async function initDb() {
+  if (db && db.health) return db;
+  
+  try {
+    console.log('Initializing SurrealDB with WASM engine');
+    // Initialize the DB with WASM engine
+    db = new Surreal({
+      engines: surrealdbWasmEngines(),
+    });
+    
+    // Use proper URL construction for connection
+    const connectionUrl = new URL('mem://');
+    console.log(`Connecting to in-memory database with ${connectionUrl.toString()}`);
+    
+    await db.connect(connectionUrl);  // toString() doesn't help
+    console.log('Connected to in-memory database');
+    
+    // Use a specific namespace and database
+    await db.use({ ns: 'test', db: 'test' });
+    console.log('Using namespace and database: test/test');
+    
+    return db;
+  } catch (error) {
+    console.error('SurrealDB initialization error:', error);
+    throw error;
+  }
+}
 
 export interface Env {}
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    // Parse the URL and route the request
-    const url = new URL(request.url);
-    const path = url.pathname;
-
-    // Enable CORS
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    };
-
-    // Handle CORS preflight requests
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
-    }
-
-    // Initialize DB connection if not already connected
-    if (!db.health) {
-      await db.connect('mem://');
-      await db.use({ ns: 'test', db: 'test' });
-    }
-
-    try {
-      if (path === '/health') {
-        return new Response(JSON.stringify({ status: 'ok' }), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      else if (path === '/api/create' && request.method === 'POST') {
-        const { table, data } = await request.json();
-        const result = await db.create(table, data);
-        return new Response(JSON.stringify(result), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      else if (path === '/api/query' && request.method === 'POST') {
-        const { query } = await request.json();
-        const result = await db.query(query);
-        return new Response(JSON.stringify(result), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      else if (path.startsWith('/api/records/')) {
-        const table = path.split('/').pop();
-        const result = await db.select(table);
-        return new Response(JSON.stringify(result), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
-      }
-
-      return new Response('Not found', { status: 404, headers: corsHeaders });
-
-    } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
+    console.log('Handling request');
+    
   },
 };
