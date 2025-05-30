@@ -6,18 +6,18 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "surrealflare",
 	"main": "src/worker.ts",
-	"compatibility_date": "2025-03-24",
+	"compatibility_date": "2025-03-20",
 	"observability": {
 		"enabled": true
 	},
 	"compatibility_flags": [
 		"nodejs_compat"
-    // "url_original"
 	],
 	"rules": [
 		{
 			"type": "ESModule",
-			"globs": ["**/*.wasm"]
+			"globs": ["**/*.wasm"],
+			"fallthrough": true
 		}
 	]
 }
